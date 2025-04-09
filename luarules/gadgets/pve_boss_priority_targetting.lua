@@ -1,3 +1,5 @@
+local gadget = gadget ---@type Gadget
+
 function gadget:GetInfo()
     return {
         name = "Raptor Queen Anti-Dgun behavior",
@@ -29,12 +31,12 @@ local queenUnitDefs = {
 	raptor_matriarch_basic = true,
 	raptor_matriarch_fire = true,
 
-    armscavengerbossv2_veryeasy = true,
-    armscavengerbossv2_easy = true,
-    armscavengerbossv2_normal = true,
-    armscavengerbossv2_hard = true,
-    armscavengerbossv2_veryhard = true,
-    armscavengerbossv2_epic = true,
+    scavengerbossv4_veryeasy_scav = true,
+    scavengerbossv4_easy_scav = true,
+    scavengerbossv4_normal_scav = true,
+    scavengerbossv4_hard_scav = true,
+    scavengerbossv4_veryhard_scav = true,
+    scavengerbossv4_epic_scav = true,
 }
 
 
@@ -48,7 +50,7 @@ queenUnitDefs = nil
 
 local queenTargets = {}
 for unitDefID, unitDef in pairs(UnitDefs) do
-    if unitDef.customParams.iscommander then
+    if unitDef.customParams.iscommander or unitDef.customParams.isscavcommander then
         queenTargets[unitDefID] = true
     end
 end
@@ -65,7 +67,7 @@ function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
     end
 end
 
-function gadget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
+function gadget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam, weaponDefID)
     if aliveQueens[unitID] then
         aliveQueens[unitID] = nil
     end
@@ -78,9 +80,10 @@ function gadget:GameFrame(frame)
     if frame%30 == 21 then
         for queenID, _ in pairs(aliveQueens) do
             local queenx,queeny,queenz = Spring.GetUnitPosition(queenID)
-            local surroundingUnits = Spring.GetUnitsInSphere(queenx, queeny, queenz, 750)
+            local queenTeamID = Spring.GetUnitTeam(queenID)
+            local surroundingUnits = CallAsTeam(queenTeamID, Spring.GetUnitsInSphere, queenx, queeny, queenz, 750, -4)
             for i = 1,#surroundingUnits do
-				if aliveTargets[surroundingUnits[i]] and Spring.GetUnitAllyTeam(surroundingUnits[i]) ~= Spring.GetUnitAllyTeam(queenID) then
+				if aliveTargets[surroundingUnits[i]] then
                     Spring.GiveOrderToUnit(queenID, CMD.STOP, 0, 0)
                     Spring.GiveOrderToUnit(queenID, CMD.ATTACK, {surroundingUnits[i]}, 0)
                     break

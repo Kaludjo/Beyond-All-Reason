@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
     return {
         name = "Building Grid GL4",
@@ -24,7 +26,7 @@ local config = {
 	lineColor = { 0.70, 1.0, 0.70 }, -- color of the lines
 }
 
-local waterLevel = Spring.GetModOptions().map_waterlevel
+local waterLevel = Spring.GetWaterPlaneLevel and Spring.GetWaterPlaneLevel() or 0
 
 local cmdShowForUnitDefID
 local isPregame = Spring.GetGameFrame() == 0 and not isSpec
@@ -42,7 +44,7 @@ local shaderConfig = { -- These will be replaced in the shader using #defines's
 }
 
 
-local luaShaderDir = "LuaUI/Widgets/Include/"
+local luaShaderDir = "LuaUI/Include/"
 local LuaShader = VFS.Include(luaShaderDir .. "LuaShader.lua")
 
 local vsSrc = [[

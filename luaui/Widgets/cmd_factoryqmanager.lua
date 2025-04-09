@@ -1,6 +1,8 @@
 include("keysym.h.lua")
 local versionNumber = 1.4
 
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name = "FactoryQ Manager",
@@ -9,7 +11,7 @@ function widget:GetInfo()
 		date = "Jul 6, 2008",
 		license = "GNU GPL, v2 or later",
 		layer = -9000,
-		enabled = false  --  loaded by default?
+		enabled = false
 	}
 end
 

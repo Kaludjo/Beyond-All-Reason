@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name      = "Auto mapmark eraser",
@@ -77,4 +79,9 @@ function widget:SetConfigData(data)
 	if data.pointsToErase ~= nil and Spring.GetGameFrame() > 0 then
 		pointsToErase = data.pointsToErase
 	end
+end
+
+function widget:ClearMapMarks()
+	pointsToErase = {}
+	recentlyErased = {}
 end

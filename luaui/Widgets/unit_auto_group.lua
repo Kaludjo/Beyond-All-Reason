@@ -1,4 +1,6 @@
-local versionNum = '4.010'
+local versionNum = '5.00'
+
+local widget = widget ---@type Widget
 
 function widget:GetInfo()
 	return {
@@ -8,13 +10,15 @@ function widget:GetInfo()
 		date = "Mar 23, 2007",
 		license = "GNU GPL, v2 or later",
 		layer = 0,
-		enabled = true  --loaded by default?
+		enabled = true
 	}
 end
 
 include("keysym.h.lua")
 
 ---- CHANGELOG -----
+-- hihoman23,       v5.00   (01nov2023) :   Allows for multiple presets, which are controlled with load_autogroup_preset,
+--											for different saved group presets.
 -- badosu born2crawl,		v4.01	(08oct2021)	: 	Use actions instead of hardcoded keybindings
 -- versus666,		v3.03	(17dec2011)	: 	Back to alt BACKQUOTE to remove selected units from group
 --											to please licho, changed help accordingly.
@@ -36,42 +40,39 @@ include("keysym.h.lua")
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+local currPreset = 1
+
 local addall = true
 local immediate = true
 local persist = true
 local verbose = true
 
-local unit2group = {} -- list of unit types to group
+local rejectedUnits = {} -- contains units, which didn't load, like legion in non-legion games
 
-local groupableBuildingTypes = { 'tacnuke', 'empmissile', 'napalmmissile', 'seismic' }
-local groupableBuildings = {}
-for _, v in ipairs(groupableBuildingTypes) do
-	if UnitDefNames[v] then
-		groupableBuildings[UnitDefNames[v].id] = true
-	end
+local presets = {} -- contains ten "presets", which can be used like unit2group
+for i = 0, 9 do
+	presets[i] = {}
+	rejectedUnits[i] = {}
 end
+local unit2group = presets[currPreset] -- list of unit types to group
+
 
 local mobileBuilders = {}
 local builtInPlace = {}
 
-local unitShowGroup = {}
-local unitHealth = {}
 for udefID, def in ipairs(UnitDefs) do
 	if not def.isFactory then
 		if def.buildOptions and #def.buildOptions > 0 then
 			mobileBuilders[udefID] = true
 		end
-		if (groupableBuildings[udefID] or not def.isBuilding) then
-			unitShowGroup[udefID] = true
-		end
 	end
-	unitHealth[udefID] = def.health
 end
 
 local finiGroup = {}
 local myTeam = Spring.GetMyTeamID()
 local createdFrame = {}
 local toBeAddedLater = {}
+local prevHealth = {}
 
 local gameStarted
 
@@ -80,6 +81,7 @@ local SetUnitGroup = Spring.SetUnitGroup
 local GetSelectedUnits = Spring.GetSelectedUnits
 local GetUnitDefID = Spring.GetUnitDefID
 local GetUnitHealth = Spring.GetUnitHealth
+local GetUnitIsBeingBuilt = Spring.GetUnitIsBeingBuilt
 local GetMouseState = Spring.GetMouseState
 local SelectUnitArray = Spring.SelectUnitArray
 local TraceScreenRay = Spring.TraceScreenRay
@@ -128,17 +130,16 @@ local function ChangeUnitTypeAutogroupHandler(_, _, args, data)
 	for i = 1, #units do
 		local unitID = units[i]
 		local udid = GetUnitDefID(unitID)
-		if unitShowGroup[udid] then
-			selUnitDefIDs[udid] = true
-			unit2group[udid] = gr
-			exec = true
-			if gr == nil then
-				SetUnitGroup(unitID, -1)
-			else
-				SetUnitGroup(unitID, gr)
-			end
+		selUnitDefIDs[udid] = true
+		unit2group[udid] = gr
+		exec = true
+		if gr == nil then
+			SetUnitGroup(unitID, -1)
+		else
+			SetUnitGroup(unitID, gr)
 		end
 	end
+	presets[currPreset] = unit2group
 	if exec == false then
 		return false --nothing to do
 	end
@@ -158,8 +159,7 @@ local function ChangeUnitTypeAutogroupHandler(_, _, args, data)
 			local curUnitDefID = GetUnitDefID(unitID)
 			if selUnitDefIDs[curUnitDefID] then
 				if gr then
-					local _, _, _, _, buildProgress = GetUnitHealth(unitID)
-					if buildProgress == 1 then
+					if immediate or not GetUnitIsBeingBuilt(unitID) then
 						SetUnitGroup(unitID, gr)
 						SelectUnitArray({ unitID }, true)
 					end
@@ -200,12 +200,44 @@ local function RemoveOneUnitFromGroupHandler(_, _, args)
 	return true
 end
 
+local function loadAutogroupPresetHandler(cmd, optLine, optWords, data, isRepeat, release, actions)
+	local newPreset = tonumber(optWords[1])
+	if not presets[newPreset] then
+		return
+	end
+	local prevGroup = presets[currPreset]
+
+	currPreset = newPreset
+
+	Echo(Spring.I18N("ui.autogroups.presetSelected", {presetNum = currPreset}))
+	unit2group = presets[currPreset]
+
+	if not unit2group then
+		return
+	end
+
+	for _, uID in ipairs(Spring.GetTeamUnits(myTeam)) do
+		local unitDefID = GetUnitDefID(uID)
+		local group = unit2group[unitDefID]
+		if tonumber(prevGroup[unitDefID]) == GetUnitGroup(uID) then -- if in last
+			SetUnitGroup(uID, -1)
+		end
+
+		if group ~= nil and GetUnitGroup(uID) == nil and addall then
+			SetUnitGroup(uID, group)
+		end
+	end
+end
+
+
 function widget:Initialize()
+
 	widget:PlayerChanged()
 
 	widgetHandler:AddAction("add_to_autogroup", ChangeUnitTypeAutogroupHandler, nil, "p") -- With a parameter, adds all units of this type to a specific autogroup
 	widgetHandler:AddAction("remove_from_autogroup", ChangeUnitTypeAutogroupHandler, { removeAll = true }, "p") -- Without a parameter, removes all units of this type from autogroups
 	widgetHandler:AddAction("remove_one_unit_from_group", RemoveOneUnitFromGroupHandler, nil, "p") -- Removes the closest of selected units from groups and selects only it
+	widgetHandler:AddAction("load_autogroup_preset", loadAutogroupPresetHandler, nil, "p") -- Changes the autogroup preset
 
 	WG['autogroup'] = {}
 	WG['autogroup'].getImmediate = function()
@@ -234,12 +266,7 @@ function widget:Shutdown()
 end
 
 function widget:UnitFinished(unitID, unitDefID, unitTeam)
-	if unitTeam ~= myTeam or unitID == nil then
-		return
-	end
-
-	if GetUnitRulesParam(unitID, "resurrected") then
-		toBeAddedLater[unitID] = unitDefID
+	if unitTeam ~= myTeam or unitID == nil or GetUnitRulesParam(unitID, "resurrected") then
 		return
 	end
 
@@ -249,7 +276,7 @@ function widget:UnitFinished(unitID, unitDefID, unitTeam)
 		finiGroup[unitID] = 1
 	end
 
-	if builtInFrame or immediate or groupableBuildings[unitDefID] or (builtInPlace[unitID] and #Spring.GetCommandQueue(unitID, 1) == 0) then
+	if not immediate and ((builtInPlace[unitID] and Spring.GetUnitCommandCount(unitID) == 0) or builtInFrame) then
 		local gr = unit2group[unitDefID]
 		if gr ~= nil and GetUnitGroup(unitID) == nil then
 			SetUnitGroup(unitID, gr)
@@ -259,14 +286,20 @@ function widget:UnitFinished(unitID, unitDefID, unitTeam)
 	builtInPlace[unitID] = nil
 end
 
-function widget:GameFrame()
-	for unitID, unitDefID in pairs(toBeAddedLater) do
-		if unitHealth[unitDefID] and GetUnitHealth(unitID) == unitHealth[unitDefID] then
-			local gr = unit2group[unitDefID]
-			if gr ~= nil and GetUnitGroup(unitID) == nil then
-				SetUnitGroup(unitID, gr)
+function widget:GameFrame(n)
+	if n % 10 == 0 then
+		for unitID, unitDefID in pairs(toBeAddedLater) do
+			local health = GetUnitHealth(unitID)
+			if health <= prevHealth[unitID] then -- stopped healing
+				local group = unit2group[unitDefID]
+				if group ~= nil and GetUnitGroup(unitID) == nil then
+					SetUnitGroup(unitID, group)
+				end
+				toBeAddedLater[unitID] = nil
+				prevHealth[unitID] = nil
+			else
+				prevHealth[unitID] = health
 			end
-			toBeAddedLater[unitID] = nil
 		end
 	end
 end
@@ -279,6 +312,19 @@ function widget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
 	if builderID and mobileBuilders[Spring.GetUnitDefID(builderID)] then
 		builtInPlace[unitID] = true
 	end
+
+	if GetUnitRulesParam(unitID, "resurrected") then
+		toBeAddedLater[unitID] = unitDefID
+		prevHealth[unitID] = 0
+		return
+	end
+
+	if immediate then
+		local gr = unit2group[unitDefID]
+		if gr ~= nil then
+			SetUnitGroup(unitID, gr)
+		end
+	end
 end
 
 function widget:UnitDestroyed(unitID, unitDefID, teamID)
@@ -286,6 +332,7 @@ function widget:UnitDestroyed(unitID, unitDefID, teamID)
 	createdFrame[unitID] = nil
 	builtInPlace[unitID] = nil
 	toBeAddedLater[unitID] = nil
+	prevHealth[unitID] = nil
 end
 
 function widget:UnitGiven(unitID, unitDefID, newTeamID, teamID)
@@ -299,6 +346,7 @@ function widget:UnitGiven(unitID, unitDefID, newTeamID, teamID)
 	createdFrame[unitID] = nil
 	builtInPlace[unitID] = nil
 	toBeAddedLater[unitID] = nil
+	prevHealth[unitID] = nil
 end
 
 function widget:UnitTaken(unitID, unitDefID, oldTeamID, teamID)
@@ -324,15 +372,23 @@ function widget:UnitIdle(unitID, unitDefID, unitTeam)
 end
 
 function widget:GetConfigData()
-	local groups = {}
-	if persist then
-		for id, gr in pairs(unit2group) do
-			table.insert(groups, { UnitDefs[id].name, gr })
+	local savePresets = {}
+	for i = 0, 9 do
+		local preset = presets[i]
+		local groups = {}
+		if persist then
+			for id, gr in pairs(preset) do
+				table.insert(groups, { UnitDefs[id].name, gr })
+			end
+			for name, gr in pairs(rejectedUnits[i]) do
+				table.insert(groups, { name, gr })
+			end
 		end
+		savePresets[i] = groups
 	end
 	local ret = {
 		version = versionNum,
-		groups = groups,
+		presets = savePresets,
 		immediate = immediate,
 		persist = persist,
 		verbose = verbose,
@@ -342,7 +398,7 @@ function widget:GetConfigData()
 end
 
 function widget:SetConfigData(data)
-	if data and type(data) == 'table' and data.version and (data.version + 0) > 2.1 then
+	if data and type(data) == 'table' and data.version and (data.version + 0) > 2.1 and (data.version + 0) < 5 then -- still use v4 saves
 		if data.immediate ~= nil then
 			immediate = data.immediate
 			verbose = data.verbose
@@ -357,10 +413,40 @@ function widget:SetConfigData(data)
 				if type(nam) == 'table' then
 					local gr = UnitDefNames[nam[1]]
 					if gr ~= nil then
-						unit2group[gr.id] = nam[2]
+						unit2group[gr.id] = tonumber(nam[2])
 					end
 				end
 			end
 		end
+		presets[1] = unit2group
+	end
+	if data and type(data) == 'table' and data.version and (data.version + 0) >= 5 then
+		if data.immediate ~= nil then
+			immediate = data.immediate
+			verbose = data.verbose
+			addall = data.addall
+		end
+		if data.persist ~= nil then
+			persist = data.persist
+		end
+		local groupData = data.presets
+		if groupData and type(groupData) == 'table' and groupData[1] and type(groupData[1]) == 'table' then
+			for p, preset in pairs(groupData) do
+				for _, group in ipairs(preset) do
+					if type(group) == 'table' then
+						local gr = UnitDefNames[group[1]]
+						if gr then
+							presets[p][gr.id] = tonumber(group[2])
+						else
+							rejectedUnits[p][group[1]] = tonumber(group[2])
+						end
+					end
+				end
+			end
+		end
+	end
+	unit2group = presets[currPreset]
+	if GetGameFrame() > 0 then
+		addAllUnits()
 	end
 end

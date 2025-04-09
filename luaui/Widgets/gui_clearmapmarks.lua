@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name		= "Clearmapmarks button",
@@ -26,7 +28,6 @@ local xPos = 0
 local yPos = 0
 
 local usedImgSize = iconSize
-local chobbyInterface
 local continuouslyClean = false
 local math_isInRect = math.isInRect
 
@@ -102,12 +103,6 @@ function widget:Update(dt)
 	end
 end
 
-function widget:RecvLuaMsg(msg, playerID)
-	if msg:sub(1,18) == 'LobbyOverlayActive' then
-		chobbyInterface = (msg:sub(1,19) == 'LobbyOverlayActive1')
-	end
-end
-
 function widget:MapDrawCmd(playerID, cmdType, startx, starty, startz, a, b, c)
 	if continuouslyClean then
 		return true
@@ -115,8 +110,6 @@ function widget:MapDrawCmd(playerID, cmdType, startx, starty, startz, a, b, c)
 end
 
 function widget:DrawScreen()
-	if chobbyInterface then return end
-
 	if drawlist[1] ~= nil then
 		local mx,my = Spring.GetMouseState()
 		glPushMatrix()
@@ -143,7 +136,9 @@ function widget:MouseRelease(mx, my, mb)
 	if mb == 1 and math_isInRect(mx, my, xPos-usedImgSize, yPos, xPos, yPos+usedImgSize) then
 		Spring.SendCommands({"clearmapmarks"})
 		updatePosition(true)
-
+		if Script.LuaUI('ClearMapMarks') then
+			Script.LuaUI.ClearMapMarks()
+		end
 		local alt, ctrl, meta, shift = Spring.GetModKeyState()
 		if ctrl then
 			continuouslyClean = not continuouslyClean

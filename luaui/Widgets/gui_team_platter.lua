@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name = "TeamPlatter", -- GL4
@@ -17,7 +19,7 @@ local skipOwnTeam = false
 ---- GL4 Backend Stuff----
 local teamplatterVBO = nil
 local teamplatterShader = nil
-local luaShaderDir = "LuaUI/Widgets/Include/"
+local luaShaderDir = "LuaUI/Include/"
 
 -- Localize for speedups:
 local glStencilFunc         = gl.StencilFunc
@@ -170,7 +172,7 @@ function widget:VisibleUnitRemoved(unitID) -- remove the corresponding ground pl
 	RemoveUnit(unitID)
 end
 
-local function GadgetCrashingAircraft(unitID, unitDefID, teamID)
+function widget:CrashingAircraft(unitID, unitDefID, teamID)
 	RemoveUnit(unitID)
 end
 
@@ -211,12 +213,10 @@ function widget:Initialize()
 		skipOwnTeam = value
 		init()
 	end
-	widgetHandler:RegisterGlobal('GadgetCrashingAircraft3', GadgetCrashingAircraft)
 end
 
 function widget:Shutdown()
 	WG['teamplatter'] = nil
-	widgetHandler:DeregisterGlobal('GadgetCrashingAircraft3')
 end
 
 function widget:GetConfigData(data)

@@ -5,6 +5,8 @@ for word in msg:gmatch("[%-_%w]+") do
 end
 ]]--
 
+local gadget = gadget ---@type Gadget
+
 function gadget:GetInfo()
 	return {
 		name = "Dev Helper Cmds",
@@ -13,7 +15,7 @@ function gadget:GetInfo()
 		date = "",
 		license = "GNU GPL, v2 or later, Horses",
 		layer = -1999999999,
-		enabled = true  --  loaded by default?
+		enabled = true
 	}
 end
 
@@ -29,9 +31,6 @@ function isAuthorized(playerID)
 		return true
 	else
 		local playername = Spring.GetPlayerInfo(playerID, false)
-		local authorized = false
-
-		local authorized = false
 		if (_G and _G.permissions.devhelpers[playername]) or (SYNCED and SYNCED.permissions.devhelpers[playername]) then
 			if startPlayers == nil or startPlayers[playername] == nil then
 				return true
@@ -43,6 +42,7 @@ end
 
 
 if gadgetHandler:IsSyncedCode() then
+
 	function checkStartPlayers()
 		for _, playerID in ipairs(Spring.GetPlayerList()) do
 			-- update player infos
@@ -52,12 +52,11 @@ if gadgetHandler:IsSyncedCode() then
 			end
 		end
 	end
+
 	function gadget:GameStart()
 		checkStartPlayers()
 	end
-	function gadget:PlayerChanged(playerID)
-		checkStartPlayers()
-	end
+
 	function LoadMissiles()
 		if not Spring.IsCheatingEnabled() then
 			return
@@ -92,7 +91,6 @@ if gadgetHandler:IsSyncedCode() then
 
 	local team1unitDefName = "armbull"
 	local team2unitDefName = "armbull"
-
 
 
 	local seededrand = {}
@@ -390,7 +388,7 @@ if gadgetHandler:IsSyncedCode() then
 		local function sampleMode(pos)
 			if pos == nil then return modeArray[1][2] end
 			if pos == -1 then return modeArray[#modeArray][2] end
-			return modeArray[math.min(math.max(1,pos), #modeArray)][2] or 0
+			return modeArray[math.clamp(pos, 1, #modeArray)][2] or 0
 		end
 		-- end of mode height related sampling
 
@@ -436,7 +434,7 @@ if gadgetHandler:IsSyncedCode() then
 								end
 							end
 							offset = offset or 0
-							
+
 							commandProc[k] = sampleMode(modePtr) + offset
 						else
 							commandProc[k] = command[j]
@@ -449,7 +447,7 @@ if gadgetHandler:IsSyncedCode() then
 				func(commandProc)
 			end
 		end
-		
+
 		-- finishing touches
 		do
 			-- Edge patchwork, something is not right with map edges, i don't know if its the above functions that fail, or if it is during map making
@@ -500,7 +498,7 @@ if gadgetHandler:IsSyncedCode() then
 				-- we only need to find 1 command to pass over, cancel actual debug commands
 				return
 			end
-			
+
 
 			debugcommands = {}
 			local commands = string.split(Spring.GetModOptions().debugcommands, '|')
@@ -554,6 +552,8 @@ if gadgetHandler:IsSyncedCode() then
 			ExecuteSelUnits(words, playerID)
 		elseif words[1] == "removeunits" then
 			ExecuteSelUnits(words, playerID, 'remove')
+		elseif words[1] == "removenearbyunits" then
+			ExecuteSelUnits(words, playerID, 'removenearbyunits')
 		elseif words[1] == "reclaimunits" then
 			ExecuteSelUnits(words, playerID, 'reclaim')
 		elseif words[1] == "wreckunits" then
@@ -744,6 +744,8 @@ if gadgetHandler:IsSyncedCode() then
 				end
 			elseif action == 'remove' then
 				Spring.DestroyUnit(unitID, false, true)
+			elseif action == 'removenearbyunits' then
+				Spring.DestroyUnit(unitID, false, true)
 			elseif action == 'reclaim' then
 				local teamID = Spring.GetUnitTeam(unitID)
 				local unitDefID = Spring.GetUnitDefID(unitID)
@@ -839,6 +841,7 @@ else	-- UNSYNCED
 		gadgetHandler:AddChatAction('wreckunits', wreckUnits, "")  -- turns the selected units into wrecks /luarules wreckunits
 		gadgetHandler:AddChatAction('reclaimunits', reclaimUnits, "")  -- reclaims and refunds the selected units /luarules reclaimUnits
 		gadgetHandler:AddChatAction('removeunits', removeUnits, "")  -- removes the selected units /luarules removeunits
+		gadgetHandler:AddChatAction('removenearbyunits', removeNearbyUnits, "")  -- removes the selected units /luarules removenearbyunits radius #teamid
 
 		gadgetHandler:AddChatAction('xp', xpUnits, "")
 
@@ -858,6 +861,7 @@ else	-- UNSYNCED
 		gadgetHandler:RemoveChatAction('destroyunits')
 		gadgetHandler:RemoveChatAction('reclaimunits')
 		gadgetHandler:RemoveChatAction('removeunits')
+		gadgetHandler:RemoveChatAction('removenearbyunits')
 		gadgetHandler:RemoveChatAction('xp')
 		gadgetHandler:RemoveChatAction('spawnceg')
 
@@ -885,6 +889,9 @@ else	-- UNSYNCED
 	function removeUnits(_, line, words, playerID)
 		processUnits(_, line, words, playerID, 'removeunits')
 	end
+	function removenearbyunits(_, line, words, playerID)
+		processUnits(_, line, words, playerID, 'removenearbyunits')
+	end
 
 	function removeUnitDef(_, line, words, playerID)
 		if not isAuthorized(Spring.GetMyPlayerID()) then
@@ -910,15 +917,24 @@ else	-- UNSYNCED
 		if not isAuthorized(Spring.GetMyPlayerID()) then
 			return
 		end
-		local selUnits = Spring.GetSelectedUnits()
-		local msg = action
-		for _, unitID in ipairs(selUnits) do
+		local msg = ''
+		local units = {}
+		if action == 'removenearbyunits' then
+			local mx,my = Spring.GetMouseState()
+			local targetType, pos = Spring.TraceScreenRay(mx,my)
+			if type(pos) == 'table' then
+				units = Spring.GetUnitsInSphere(pos[1], pos[2], pos[3], words[1] and words[1] or 24, words[2] and words[2] or nil)
+			end
+		else
+			units = Spring.GetSelectedUnits()
+		end
+		for _, unitID in ipairs(units) do
 			msg = msg .. " " .. tostring(unitID)
 		end
 		if words[1] then
 			msg = msg .. ':'.. words[1]
 		end
-		Spring.SendLuaRulesMsg(PACKET_HEADER .. ':' .. msg)
+		Spring.SendLuaRulesMsg(PACKET_HEADER .. ':' .. action .. msg)
 	end
 
 	function dumpFeatures(_)
@@ -959,7 +975,7 @@ else	-- UNSYNCED
 			local mapcx = Game.mapSizeX/2
 			local mapcz = Game.mapSizeZ/2
 			local mapcy = Spring.GetGroundHeight(mapcx,mapcz)
-			--Spring.Debug.TableEcho(camState)
+
 			camState["px"] = mapcx
 			camState["py"] = mapcy
 			camState["pz"] = mapcz
@@ -1155,8 +1171,7 @@ else	-- UNSYNCED
 				stats.display = tostring(vsx) ..'x' .. tostring(vsy)
 
 				Spring.Echo("Benchmark Results")
-				Spring.Debug.TableEcho(stats)
-
+				Spring.Echo(stats)
 
 				if Spring.GetMenuName then
 					local message = Json.encode(stats)
@@ -1173,7 +1188,7 @@ else	-- UNSYNCED
 			if Spring.GetModOptions().scenariooptions then
 				--Spring.Echo("Scenario: Spawning on frame", Spring.GetGameFrame())
 				local scenariooptions = string.base64Decode(Spring.GetModOptions().scenariooptions)
-				Spring.Debug.TableEcho(scenariooptions)
+				Spring.Echo(scenariooptions)
 				scenariooptions = Json.decode(scenariooptions)
 				if scenariooptions and scenariooptions.benchmarkcommand then
 					--This is where the magic happens!

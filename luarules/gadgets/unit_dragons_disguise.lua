@@ -1,3 +1,5 @@
+local gadget = gadget ---@type Gadget
+
 function gadget:GetInfo()
     return {
         name      = "Dragons Disguise",
@@ -6,7 +8,7 @@ function gadget:GetInfo()
         date      = "25 Nov 2008",
         license   = "GNU GPL, v2 or later",
         layer     = 0,
-        enabled   = true  --  loaded by default?
+        enabled   = true
     }
 end
 
@@ -53,7 +55,7 @@ function gadget:GameFrame(n)
   end
 end
 
-function gadget:UnitDestroyed(unitID, unitDefID, unitTeam)
+function gadget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam, weaponDefID)
   neutralUnits[unitID] = nil
 end
 

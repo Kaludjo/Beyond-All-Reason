@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name = "Screen Mode Info",
@@ -6,7 +8,7 @@ function widget:GetInfo()
 		date = "November 2020",
 		license = "GNU GPL, v2 or later",
 		layer = 0,
-		enabled = true --  loaded by default?
+		enabled = true
 	}
 end
 

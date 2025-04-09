@@ -1,3 +1,5 @@
+local gadget = gadget ---@type Gadget
+
 function gadget:GetInfo()
 	return {
 		name = "Airbase Manager",
@@ -6,7 +8,7 @@ function gadget:GetInfo()
 		date = "February 2016",
 		license = "GNU GPL, v2 or later",
 		layer = 1,
-		enabled = true  --  loaded by default?
+		enabled = true
 	}
 end
 
@@ -254,13 +256,11 @@ if gadgetHandler:IsSyncedCode() then
 	end
 
 	function FlyAway(unitID, airbaseID)
-		--
 		-- hack, after detaching units don't always continue with their command q
 		GiveWaitWaitOrder(unitID)
-		--
 
 		-- if the unit has no orders, tell it to move a little away from the airbase
-		local q = Spring.GetCommandQueue(unitID, 0)
+		local q = Spring.GetUnitCommandCount(unitID)
 		if q == 0 then
 			local px, _, pz = spGetUnitPosition(airbaseID)
 			local theta = math_random() * 2 * math_pi
@@ -310,8 +310,7 @@ if gadgetHandler:IsSyncedCode() then
 			InsertLandAtAirbaseCommands(unitID)
 		end
 
-		local _, _, _, _, buildProgress = spGetUnitHealth(unitID)
-		if buildProgress == 1.0 then
+		if not Spring.GetUnitIsBeingBuilt(unitID) then
 			gadget:UnitFinished(unitID, unitDefID, unitTeam)
 		end
 	end
@@ -322,7 +321,7 @@ if gadgetHandler:IsSyncedCode() then
 		end
 	end
 
-	function gadget:UnitDestroyed(unitID, unitDefID, unitTeam)
+	function gadget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam, weaponDefID)
 		if not planes[unitID] and not airbases[unitID] then
 			return
 		end
@@ -517,19 +516,9 @@ if gadgetHandler:IsSyncedCode() then
 								local unitDefID = Spring.GetUnitDefID(unitID)
 								if isAirUnit[unitDefID] and uy > Spring.GetGroundHeight(ux,uz)+10 then -- maybe landed planes are "not a flying unit" so lets try checking ground height
 									local moveTypeData = Spring.GetUnitMoveTypeData(unitID)
-									
-									--[[
-									if moveTypeData.aircraftState == nil then 
-										Spring.Echo('SetUnitLandGoal Failure imminent:',unitID, UnitDefs[Spring.GetUnitDefID(unitID)].name)
-										Spring.Echo(unitID)
-										Spring.Debug.TableEcho(moveTypeData)
-										Spring.SendCommands("pause 1")
-									end
-									]]--
-									
+
 									if moveTypeData.aircraftState and moveTypeData.aircraftState ~= "crashing" then --#attempt 12
 										-- crashing aircraft probably dont count as 'flying units', attempt #10 at fixing "not a flying unit"
-										--Spring.Echo('SetUnitLandGoal',unitID, UnitDefs[Spring.GetUnitDefID(unitID)].name)
 										Spring.SetUnitLandGoal(unitID, px, py, pz, radius)	-- sometimes this gives an error: "not a flying unit"
 									end
 
@@ -633,7 +622,6 @@ if gadgetHandler:IsSyncedCode() then
 	end
 
 
-
 else	-- Unsynced
 
 
@@ -645,7 +633,6 @@ else	-- Unsynced
 	local spGetSelectedUnits = Spring.GetSelectedUnits
 
 	local myTeamID = Spring.GetMyTeamID()
-	local myAllyTeamID = Spring.GetMyAllyTeamID()
 
 	function gadget:Initialize()
 		Spring.SetCustomCommandDrawData(CMD_LAND_AT_SPECIFIC_AIRBASE, "landatairbase", landAtAirBaseCmdColor, false)
@@ -655,7 +642,6 @@ else	-- Unsynced
 
 	function gadget:PlayerChanged()
 		myTeamID = Spring.GetMyTeamID()
-		myAllyTeamID = Spring.GetMyAllyTeamID()
 	end
 
 	function gadget:DefaultCommand(type, id, cmd)

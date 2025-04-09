@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name = "Chili Draw GL4 API",
@@ -50,7 +52,7 @@ local function makeAtlas()
 	addDirToAtlas(atlasTexture, "luaui/images/chiliskin_gl4", "tech")
 	gl.FinalizeTextureAtlas(atlasTexture)	
 	local texInfo = gl.TextureInfo(atlasTexture ) 
-	--Spring.Debug.TableEcho(texInfo)	
+
 	atlasX = texInfo.xsize -- cool this works
 	atlasY = texInfo.ysize
 	for filepath,_ in pairs(atlassedImagesUVs) do
@@ -63,7 +65,7 @@ local function makeAtlas()
 end
 
 ------------- SHADERS ----------------------------------------------
-local luaShaderDir = "LuaUI/Widgets/Include/"
+local luaShaderDir = "LuaUI/Include/"
 local LuaShader = VFS.Include(luaShaderDir.."LuaShader.lua")
 local chiliShader = nil
 
@@ -74,8 +76,8 @@ local shaderConfig = { -- these will get #defined in shader headers
 }
 
 -- TODO use this instead
-local vsSrcPath = "LuaUI/Widgets/Shaders/chiligl4.vert.glsl"
-local fsSrcPath = "LuaUI/Widgets/Shaders/chiligl4.frag.glsl"
+local vsSrcPath = "LuaUI/Shaders/chiligl4.vert.glsl"
+local fsSrcPath = "LuaUI/Shaders/chiligl4.frag.glsl"
 
 -- the vertex shader maps to screen space
 local vsSrc =  [[

@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name = "Changelog Info",
@@ -437,7 +439,7 @@ function widget:Initialize()
 		end
 
 		-- somehow there are a few characters added at the start that we need to remove
-		changelogFile = string.sub(changelogFile, 4)
+		--changelogFile = string.sub(changelogFile, 4)
 
 		-- store changelog into array
 		changelogLines = string.lines(changelogFile)

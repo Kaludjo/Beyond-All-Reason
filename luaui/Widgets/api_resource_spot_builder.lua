@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name = "API Resource Spot Builder (mex/geo)",
@@ -142,7 +144,7 @@ local function spotHasExtractorQueued(spot, builders)
 
 	else
 		for i=1, #builders do
-			local hasOrder = checkQueue(Spring.GetCommandQueue(builders[i], 100))
+			local hasOrder = checkQueue(Spring.GetUnitCommands(builders[i], 100))
 			if hasOrder then
 				return true
 			end
@@ -305,7 +307,7 @@ local function sortBuilders(units, constructorIds, buildingId, shift)
 	end
 
 	local function hasExistingGuardOrder(uid)
-		local queue = Spring.GetCommandQueue(uid, 10)
+		local queue = Spring.GetUnitCommands(uid, 10)
 		for i = 1, #queue do
 			local cmd = queue[i]
 			if cmd.id == CMD_GUARD and (cmd.params and cmd.params[1] and isMainBuilderOfId(cmd.params[1])) then
@@ -339,22 +341,34 @@ local function sortBuilders(units, constructorIds, buildingId, shift)
 end
 
 
+local function previewMetalMapExtractorCommand(params, extractor)
+	local buildingId = -extractor
+	local facing = spGetBuildFacing() or 1
+	local x, y, z = spPos2BuildPos(extractor, params[1], params[2], params[3])
+	local targetOwner = spGetMyTeamID()
+
+	if x and z then
+		return { math.abs(buildingId), x, y, z, facing, targetOwner }
+	end
+	return nil
+end
+
+
 ---Puts together build orders for ghost previews (e.g. mex snap). These orders can be fed directly to
 ---ApplyPreviewCmds to actually give the orders to units
 ---@param params table
 ---@param extractor table
 ---@param spot table must be a full spot, not just position. isMex or isGeo field required for things to work.
+---@param metalMap boolean if this is for a metal map. If so it's used for upgrade visualizing only and takes a different code path.
 ---@return table format is { buildingId, x, y, z, facing, owner }
-local function PreviewExtractorCommand(params, extractor, spot)
+local function PreviewExtractorCommand(params, extractor, spot, metalMap)
+	if metalMap and not spot then
+		return previewMetalMapExtractorCommand(params, extractor)
+	end
 	local cmdX, _, cmdZ = params[1], params[2], params[3]
 
-	local command = {}
-	local x, y, z = spPos2BuildPos(extractor, spot.x, spot.y, spot.z)
-	local buildPos = { x = x, y = y, z = z }
 	-- Skip mex spots that have queued mexes already
-	if extractorCanBeBuiltOnSpot(spot, extractor) then
-		command = buildPos
-	else
+	if not extractorCanBeBuiltOnSpot(spot, extractor) then
 		return
 	end
 
@@ -366,7 +380,6 @@ local function PreviewExtractorCommand(params, extractor, spot)
 	local targetPos, targetOwner
 	local occupiedSpot = spotHasExtractor(spot)
 	if occupiedSpot then
-
 		local occupiedPos = { spGetUnitPosition(occupiedSpot) }
 		targetPos = { x=occupiedPos[1], y=occupiedPos[2], z=occupiedPos[3] }
 		targetOwner = Spring.GetUnitTeam(occupiedSpot)	-- because gadget "Mex Upgrade Reclaimer" will share a t2 mex build upon ally t1 mex

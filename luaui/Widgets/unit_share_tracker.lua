@@ -1,5 +1,7 @@
 local versionNumber = "v1.1"
 
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name = "Share Tracker",
@@ -8,11 +10,11 @@ function widget:GetInfo()
 		date = "17 August 2009",
 		license = "GNU LGPL, v2.1 or later",
 		layer = 0,
-		enabled = true  --  loaded by default?
+		enabled = true
 	}
 end
 
-local getMiniMapFlipped = VFS.Include("luaui/Widgets/Include/minimap_utils.lua").getMiniMapFlipped
+local getMiniMapFlipped = VFS.Include("luaui/Include/minimap_utils.lua").getMiniMapFlipped
 
 ----------------------------------------------------------------
 -- config
@@ -241,7 +243,10 @@ function widget:UnitTaken(unitID, unitDefID, oldTeam, newTeam)
 
 	local selfShare = (oldTeam == newTeam) -- may happen if took other player
 
-	if newTeam == GetMyTeamID() and not selfShare and not captured then
+	local price = Spring.GetUnitRulesParam(unitID, "unitPrice")
+	local bought = price ~= nil and price > 0
+
+	if newTeam == GetMyTeamID() and not selfShare and not captured and not bought then
 		if not timeNow then
 			StartTime()
 		end

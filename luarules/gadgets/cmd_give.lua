@@ -1,4 +1,6 @@
 
+local gadget = gadget ---@type Gadget
+
 function gadget:GetInfo()
 	return {
 		name    = "Give Command",
@@ -30,7 +32,7 @@ local givenSomethingAtFrame = -1	-- used to fix double spawns when multiple auth
 if gadgetHandler:IsSyncedCode() then
 
 	local startPlayers = {}
-	function checkStartPlayers()
+	local function checkStartPlayers()
 		for _,playerID in ipairs(Spring.GetPlayerList()) do -- update player infos
 			local playername,_,spec = Spring.GetPlayerInfo(playerID,false)
 			if not spec then
@@ -42,9 +44,6 @@ if gadgetHandler:IsSyncedCode() then
 		checkStartPlayers()
 	end
 	function gadget:GameStart()
-		checkStartPlayers()
-	end
-	function gadget:PlayerChanged(playerID)
 		checkStartPlayers()
 	end
 

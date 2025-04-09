@@ -1,3 +1,5 @@
+local gadget = gadget ---@type Gadget
+
 function gadget:GetInfo()
     return {
         name      = "subMissile splash",
@@ -7,7 +9,7 @@ function gadget:GetInfo()
         date      = "July 2014",
         license   = "GNU GPL, v2 or later",
         layer     = 0,
-        enabled   = false,  --  loaded by default?
+        enabled   = false,
     }
 end
 

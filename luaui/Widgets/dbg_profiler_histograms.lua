@@ -3,6 +3,8 @@
 -- reading on LuaVBO: https://github.com/beyond-all-reason/spring/blob/BAR/rts/Lua/LuaVBOImpl.cpp
 -- Quick video on what VAO/VBO are: https://www.youtube.com/watch?v=WMiggUPst-Q
 
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name = "Profiler Histograms",
@@ -11,7 +13,7 @@ function widget:GetInfo()
 		date = "2021.mar.29",
 		license = "GNU GPL, v2 or later",
 		layer = -100000,
-		enabled = false, --	loaded by default
+		enabled = false,
 	}
 end
 
@@ -29,7 +31,7 @@ local boundingbox = {vsx/4, vsy/4, 3*vsx/4, 3*vsy/4}
 
 local histShader = nil
 
-local luaShaderDir = "LuaUI/Widgets/Include/"
+local luaShaderDir = "LuaUI/Include/"
 local LuaShader = VFS.Include(luaShaderDir.."LuaShader.lua")
 VFS.Include(luaShaderDir.."instancevbotable.lua")
 local maxframes = 500

@@ -1,3 +1,5 @@
+local gadget = gadget ---@type Gadget
+
 function gadget:GetInfo()
 	return {
 		name		= "Healthbars Widget Forwarding",
@@ -6,7 +8,7 @@ function gadget:GetInfo()
 		date		= "2021.11.25",
 		license	 	= "GNU GPL, v2 or later",
 		layer		= -1,
-		enabled		= true	--	loaded by default?
+		enabled		= true
 	}
 end
 
@@ -47,7 +49,7 @@ if gadgetHandler:IsSyncedCode() then
 		forwardedFeatureIDs[featureID] = nil
 	end
 
-	function gadget:UnitDestroyed(unitID)
+	function gadget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam, weaponDefID)
 		forwardedCaptureUnitIDs[unitID] = nil
 		unitreloadframe[unitID] = nil
 	end

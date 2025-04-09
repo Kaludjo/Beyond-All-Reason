@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name      = "State Remover",
@@ -6,7 +8,7 @@ function widget:GetInfo()
 		date      = "Oct 2, 2009",
 		license   = "GNU GPL, v2 or later",
 		layer     = 0,
-		enabled   = false  --  loaded by default?
+		enabled   = false
 	}
 end
 

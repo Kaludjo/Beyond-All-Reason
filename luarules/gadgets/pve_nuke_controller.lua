@@ -1,3 +1,5 @@
+local gadget = gadget ---@type Gadget
+
 function gadget:GetInfo()
 	return {
 		name = "Raptor Defense Nuke Controller",
@@ -14,26 +16,38 @@ if not gadgetHandler:IsSyncedCode() then
     return
 end
 
+local difficulty = "normal"
+
 if Spring.Utilities.Gametype.IsRaptors() then
 	Spring.Log(gadget:GetInfo().name, LOG.INFO, "Raptor Defense Spawner Activated!")
+    difficulty = Spring.GetModOptions().raptor_difficulty
 elseif Spring.Utilities.Gametype.IsScavengers() then
     Spring.Log(gadget:GetInfo().name, LOG.INFO, "Scav Defense Spawner Activated!")
+    difficulty = Spring.GetModOptions().scav_difficulty
 else
 	Spring.Log(gadget:GetInfo().name, LOG.INFO, "Defense Spawner Deactivated!")
 	return false
 end
 
+local pveTeamID = Spring.Utilities.GetScavTeamID() or Spring.Utilities.GetRaptorTeamID()
+
 local nukeDefs = {}
-for _, unitDefName in ipairs({"raptor_turret_meteor_t4_v1", "corsilo_scav", "armsilo_scav","corjuno_scav", "armjuno_scav"}) do 
-	if UnitDefNames[unitDefName] then 
-		nukeDefs[UnitDefNames[unitDefName].id] = true
+for unitDefID, def in ipairs(UnitDefs) do
+	if def.weapons then
+		for i = 1, #def.weapons do
+			local wDef = WeaponDefs[def.weapons[i].weaponDef]
+			if wDef.targetable == 1 then
+				nukeDefs[unitDefID] = true
+				break
+			end
+		end
 	end
 end
 
 local aliveNukeLaunchers = {}
 
 function gadget:UnitCreated(unitID, unitDefID, unitTeam)
-    if nukeDefs[unitDefID] then
+    if nukeDefs[unitDefID] and (unitTeam == pveTeamID) then
         aliveNukeLaunchers[unitID] = Spring.GetGameSeconds() + math.random(5,10)
     end
 end
@@ -52,7 +66,8 @@ local difficulties = {
 	veryhard = 600,
 	epic     = 500,
 }
-local gridSize = difficulties[Spring.GetModOptions().raptor_difficulty]
+
+local gridSize = difficulties[difficulty]
 local mapSizeX = Game.mapSizeX
 local mapSizeZ = Game.mapSizeZ
 local targetGridCells = {}
@@ -96,7 +111,7 @@ function gadget:GameFrame(frame)
                     z = z + math.random(-1024,1024)
                     y = math.max(Spring.GetGroundHeight(x,z), 0)
                     if x and z and x > 0 and x < mapSizeX and z > 0 and z < mapSizeZ and checkTargetCell(x,z,nukeID) then
-                        Spring.GiveOrderToUnit(nukeID, CMD.ATTACK, {x, y, z}, {"shift"})
+                        Spring.GiveOrderToUnit(nukeID, CMD.ATTACK, {x, y, z}, 0)
                         aliveNukeLaunchers[nukeID] = GetGameSeconds() + math.random(10,90)
                     end
                 end

@@ -1,6 +1,9 @@
-if not (Spring.Utilities.Gametype.IsRaptors() and not Spring.Utilities.Gametype.IsScavengers()) then
+if not (Spring.Utilities.Gametype.IsRaptors() or Spring.Utilities.Gametype.IsScavengers()) then
+    Spring.Echo("REMOVED PVE BOSS DRONES")
 	return false
 end
+
+local gadget = gadget ---@type Gadget
 
 function gadget:GetInfo()
     return {
@@ -17,6 +20,8 @@ end
 if not gadgetHandler:IsSyncedCode() then
     return
 end
+
+local pveTeamID = Spring.Utilities.GetScavTeamID() or Spring.Utilities.GetRaptorTeamID()
 
 local positionCheckLibrary = VFS.Include("luarules/utilities/damgam_lib/position_checks.lua")
 
@@ -518,7 +523,7 @@ unitListNames = nil
 local aliveCarriers = {}
 local aliveDrones = {}
 function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
-    if unitList[unitDefID] then
+    if unitList[unitDefID] and (unitTeam == pveTeamID) then
         aliveCarriers[unitID] = {}
         for i = 1,#unitList[unitDefID] do
             aliveCarriers[unitID][i] = {
@@ -529,7 +534,7 @@ function gadget:UnitCreated(unitID, unitDefID, unitTeam, builderID)
     end
 end
 
-function gadget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam)
+function gadget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam, weaponDefID)
     if aliveCarriers[unitID] then
         aliveCarriers[unitID] = nil
         for droneID, stats in pairs(aliveDrones) do

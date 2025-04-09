@@ -7,7 +7,6 @@ return {
 		metalcost = 1250,
 		buildpic = "legperdition.DDS",
 		buildtime = 62000,
-		category = "ALL NOTLAND WEAPON NOTSUB NOTSHIP NOTAIR NOTHOVER SURFACE EMPABLE",
 		collisionvolumeoffsets = "0 0 0",
 		collisionvolumescales = "80 70 80",
 		collisionvolumetype = "CylY",
@@ -30,14 +29,14 @@ return {
 		customparams = {
 			usebuildinggrounddecal = true,
 			buildinggrounddecaltype = "decals/legperdition_aoplane.dds",
-			buildinggrounddecalsizey = 7.5,
-			buildinggrounddecalsizex = 7.5,
+			buildinggrounddecalsizey = 8,
+			buildinggrounddecalsizex = 8,
 			buildinggrounddecaldecayspeed = 30,
 			unitgroup = 'weapon',
-			model_author = "Hornet",
-			normaltex = "unittextures/cor_normal.dds",
+			model_author = "Hornet, Tharsis",
+			normaltex = "unittextures/leg_normal.dds",
 			removewait = true,
-			subfolder = "corbuildings/landdefenceoffence",
+			subfolder = "CorBuildings/LandDefenceOffence",
 			techlevel = 2,
 		},
 		featuredefs = {
@@ -129,18 +128,17 @@ return {
 				craterboost = 0,
 				cratermult = 0,
 				edgeeffectiveness = 0.75,
-				explosiongenerator = "custom:burnfirecom-xl",
+				explosiongenerator = "custom:fire-explosion-large",
 				gravityaffected = true,
 				hightrajectory = 1,
-				impulseboost = 0.123,
 				impulsefactor = 2,
 
 				flamegfxtime = 1,
-				impulseboost = 0.123,
+				interceptedByShieldType = 0,
 				impulsefactor = 0.123,
 				metalpershot = 500,
-				model = "xmasball1_1.s3o",--ho ho ho
-				name = "Long range hellfire",
+				model = "legbomb.s3o",
+				name = "Long-Range Tactical Hellfire Napalm Shell",
 				energypershot = 17000,
 				noselfdamage = true,
 				range = 2300,
@@ -174,12 +172,21 @@ return {
 				weapontimer = 5,
 				weapontype = "Cannon",
 				--weaponvelocity = 650,
+				customparams = {
+					area_onhit_ceg = "fire-area-150-repeat",
+					area_onhit_damageCeg = "burnflamexl-gen",
+					area_onhit_resistance = "fire",
+					area_onhit_damage = 175,
+					area_onhit_range = 150,
+					area_onhit_time = 15,
+					stockpilelimit = 10,
+				},
 				damage = {
 					commanders = 700,
 					default = 2000,--plus 150*15 within 150 area
 				},
-			},			
-			
+			},
+
 		},
 		weapons = {
 			[1] = {

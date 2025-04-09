@@ -2,6 +2,8 @@ include("keysym.h.lua")
 
 local versionNumber = "6.32"
 
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name      = "Defense Range",
@@ -94,12 +96,36 @@ modConfig["BYAR"]["unitList"] = {
 	corbuzz = { weapons = { 1 } },
 	
 	--LEGION
-	legstarfall = { weapons = { 1 } },
-	legbombard = { weapons = { 1 } },
-	legperdition = { weapons = { 1 } },
+
+	leglht = { weapons = { 1 } }, -- t1 heatray tower
+	legmg = { weapons = { 1 } }, -- machine gun tower
+	legdtr = { weapons = { 1 } }, -- t1 pop-up riot cannon
+	legcluster = { weapons = { 1 } },  -- t1 cluster arty
+	leghive = { weapons = { 1 } },  -- t1 drone pad
+
+	legrl = { weapons = { 2 } }, -- t1 light aa turret
+	legrhapsis = { weapons = { 2 } }, -- t1 salvo aa
+	leglupara = { weapons = { 2 } }, -- t1.5 burst flak
+
+	legstarfall = { weapons = { 1 } }, -- LOLCannon
+	leglrpc = { weapons = { 1 } }, -- t2 lrpc
+	legacluster = { weapons = { 1 } }, -- t2 popup arty
+	legbombard = { weapons = { 1 } }, -- t2 pop-up
+	legperdition = { weapons = { 1 } }, -- t2 tacnuke
+
+	legflak = { weapons = { 2 } }, -- t2 ravager gatling flak
+	leglraa = { weapons = { 2 } }, -- t2 aa railgun
 	
+	legtl = { weapons = { 1 } }, --torp launcher
+
+	legabm = { weapons = { 3 } },
+	legrampart = { weapons = { 3 }},
+
 	-- SCAVENGERS
-	scavengerdroppodbeacon_scav = { weapons = { 1 } },
+	scavbeacon_t1_scav = { weapons = { 1 } },
+	scavbeacon_t2_scav = { weapons = { 1 } },
+	scavbeacon_t3_scav = { weapons = { 1 } },
+	scavbeacon_t4_scav = { weapons = { 1 } },
 
 	armannit3 = { weapons = { 1 } },
 	--armbotrail = { weapons = { 1 } },
@@ -379,7 +405,6 @@ function UnitDetected( unitID, allyTeam, teamId )
 	end
 	local unitDefID = spGetUnitDefID(unitID)
 
-	local key = tostring(unitID)
 	local x, y, z = spGetUnitPosition(unitID)
 
 	local range = 0

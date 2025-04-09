@@ -11,6 +11,8 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
   return {
     name      = "RelativeMinimap",
@@ -19,7 +21,7 @@ function widget:GetInfo()
     date      = "Feb 5, 2007",
     license   = "GNU GPL, v2 or later",
     layer     = 0,
-    enabled   = true  --  loaded by default?
+    enabled   = true
   }
 end
 

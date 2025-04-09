@@ -1,4 +1,6 @@
 
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
   return {
     name      = "Auto First Build Facing",
@@ -7,7 +9,7 @@ function widget:GetInfo()
     date      = "October 26, 2008",
     license   = "Free",
     layer     = 0,
-    enabled   = true  -- loaded by default
+    enabled   = true
   }
 end
 

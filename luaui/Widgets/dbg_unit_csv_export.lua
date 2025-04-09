@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
   return {
     name      = "Unit CSV Export",
@@ -6,7 +8,7 @@ function widget:GetInfo()
     date      = "May 2018",
     license   = "GNU GPL, v2 or later",
     layer     = 0,
-    enabled   = false --  loaded by default?
+    enabled   = false
   }
 end
 

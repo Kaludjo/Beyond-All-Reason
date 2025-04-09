@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
     return {
       name      = "Converter Usage",
@@ -6,7 +8,7 @@ function widget:GetInfo()
       date      = "05.08.2022",
 	  license   = "GNU GPL, v2 or later",
       layer     = 0,
-      enabled   = true  --  loaded by default?
+      enabled   = true
     }
   end
 

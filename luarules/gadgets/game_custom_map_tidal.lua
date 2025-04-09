@@ -1,5 +1,7 @@
 if not gadgetHandler:IsSyncedCode() then return false end
 
+local gadget = gadget ---@type Gadget
+
 function gadget:GetInfo()
 	return {
 		name = "Custom Map Tidal",
@@ -8,7 +10,7 @@ function gadget:GetInfo()
 		date = "December 2023",
 		license = "GPLv2 or late",
 		layer = 0,
-		enabled = true  --  loaded by default?
+		enabled = true
 	}
 end
 

@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name = "EnemySpotter", -- GL4
@@ -19,7 +21,7 @@ local sizeMultiplier = 1.25
 ---- GL4 Backend Stuff----
 local enemyspotterVBO = nil
 local enemyspotterShader = nil
-local luaShaderDir = "LuaUI/Widgets/Include/"
+local luaShaderDir = "LuaUI/Include/"
 
 -- Localize for speedups:
 local glDepthTest           = gl.DepthTest
@@ -128,7 +130,7 @@ function widget:VisibleUnitRemoved(unitID) -- remove the corresponding ground pl
 	RemoveUnit(unitID)
 end
 
-local function GadgetCrashingAircraft(unitID, unitDefID, teamID)
+function widget:CrashingAircraft(unitID, unitDefID, teamID)
 	RemoveUnit(unitID)
 end
 
@@ -182,12 +184,10 @@ function widget:Initialize()
 		skipOwnTeam = value
 		init()
 	end
-	widgetHandler:RegisterGlobal('GadgetCrashingAircraft4', GadgetCrashingAircraft)
 end
 
 function widget:Shutdown()
 	WG['enemyspotter'] = nil
-	widgetHandler:DeregisterGlobal('GadgetCrashingAircraft4')
 end
 
 function widget:GetConfigData(data)

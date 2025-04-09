@@ -1,4 +1,6 @@
 
+local gadget = gadget ---@type Gadget
+
 function gadget:GetInfo()
 	return {
 		name    = "Send Command",
@@ -32,9 +34,6 @@ if gadgetHandler:IsSyncedCode() then
 		checkStartPlayers()
 	end
 	function gadget:GameStart()
-		checkStartPlayers()
-	end
-	function gadget:PlayerChanged(playerID)
 		checkStartPlayers()
 	end
 

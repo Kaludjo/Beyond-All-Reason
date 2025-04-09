@@ -1,3 +1,5 @@
+local gadget = gadget ---@type Gadget
+
 function gadget:GetInfo()
     return {
         name      = "GeoVent Sounds",
@@ -7,7 +9,7 @@ function gadget:GetInfo()
         license   = "GNU GPL, v2 or later",
         version   = 1,
         layer     = 5,
-        enabled   = true  --  loaded by default?
+        enabled   = true
     }
 end
 

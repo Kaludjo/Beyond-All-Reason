@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
   return {
     name      = "Unit Finished Sounds",
@@ -6,7 +8,7 @@ function widget:GetInfo()
     date      = "30 Sep 2009",
     license   = "GNU GPL, v2 or later",
     layer     = 0,
-    enabled   = true  --  loaded by default?
+    enabled   = true
   }
 end
 

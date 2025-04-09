@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name      = "Take Proxy",
@@ -6,7 +8,7 @@ function widget:GetInfo()
 		date      = "2012",
 		license   = "WTFPL",
 		layer     = 0,
-		enabled   = true  -- loaded by default
+		enabled   = true
 	}
 end
 

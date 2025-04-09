@@ -1,3 +1,5 @@
+local gadget = gadget ---@type Gadget
+
 function gadget:GetInfo()
     return {
         name      = "Reclaim Fix",
@@ -6,7 +8,7 @@ function gadget:GetInfo()
         date      = "May 24th, 2009",
         license   = "GNU GPL, v2 or later",
         layer     = 0,
-        enabled   = true  --  loaded by default?
+        enabled   = true
     }
 end
 

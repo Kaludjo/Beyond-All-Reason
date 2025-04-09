@@ -15,6 +15,7 @@ CallInsList = {
 	"Shutdown",
 	"LayoutButtons",
 	"ConfigureLayout",
+	"ActiveCommandChanged",
 	"CommandNotify",
 
 	"KeyPress",
@@ -77,11 +78,6 @@ CallInsList = {
 	"FeatureDestroyed",
 
 	"DrawGenesis",
-	"DrawWater",
-	"DrawSky",
-	"DrawSun",
-	"DrawGrass",
-	"DrawTrees",
 	"DrawWorld",
 	"DrawWorldPreUnit",
 	"DrawWorldPreParticles",
@@ -106,9 +102,10 @@ CallInsList = {
 	"DrawShadowUnitsLua",
 	"DrawShadowFeaturesLua",
 
+	"FontsChanged",
+
 	"SunChanged",
 
-	"Explosion",
 	"ShockFront",
 
 	"RecvSkirmishAIMessage",
@@ -135,7 +132,15 @@ CallInsList = {
 	"DownloadFailed",
 	"DownloadProgress",
 
-	"LanguageChanged"
+	"LanguageChanged",
+
+	"UnitSale",
+	"UnitSold",
+
+	"VisibleExplosion",
+	"Barrelfire",
+	"CrashingAircraft",
+	"ClearMapMarks",
 }
 
 CallInsMap = {}

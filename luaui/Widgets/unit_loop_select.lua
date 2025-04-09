@@ -1,4 +1,6 @@
 
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name      = "Loop Select",
@@ -8,7 +10,7 @@ function widget:GetInfo()
 		date      = "Jul 18, 2009",
 		license   = "GNU GPL, v2 or later",
 		layer     = 0,
-		enabled   = false  --  loaded by default?
+		enabled   = false
 	}
 end
 

@@ -6,6 +6,8 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+local gadget = gadget ---@type Gadget
+
 function gadget:GetInfo()
     return {
         name      = "Controls Unit's maxrange",
@@ -14,7 +16,7 @@ function gadget:GetInfo()
         date      = "06 dec 2017",
         license   = "GNU GPL, v2 or later",
         layer     = 0,
-        enabled   = true  --  loaded by default?
+        enabled   = true
     }
 end
 

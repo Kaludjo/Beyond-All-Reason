@@ -11,6 +11,8 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name		= "Unit Mover",
@@ -19,7 +21,7 @@ function widget:GetInfo()
 		date		= "Mar 20, 2007",
 		license		= "GNU GPL, v2 or later",
 		layer		= 0,
-		enabled		= false	--	loaded by default?
+		enabled		= false
 	}
 end
 

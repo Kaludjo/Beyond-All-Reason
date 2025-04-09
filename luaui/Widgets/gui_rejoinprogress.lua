@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name = "Rejoin progress",
@@ -221,6 +223,12 @@ end
 
 function widget:GameStart()
 	gameStarted = true
+end
+
+function widget:RecvLuaMsg(msg, playerID)
+	if not serverFrame and msg:sub(1,12) == 'ServerFrame' then
+		serverFrame = tonumber(msg:sub(13))
+	end
 end
 
 function widget:Initialize()

@@ -10,6 +10,8 @@ if customparamDefsDetected then
 
     local excludeScavengers = true
 
+    local widget = widget ---@type Widget
+
     function widget:GetInfo()
         return {
             name      = "Write customparam.__def to files",
@@ -18,7 +20,7 @@ if customparamDefsDetected then
             date      = "-1",
             license   = "GNU GPL, v2 or later",
             layer     = 0,
-            enabled   = true  --  loaded by default?
+            enabled   = true
         }
     end
 

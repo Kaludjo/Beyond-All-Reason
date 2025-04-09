@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name      = "Auto Cloak Units",
@@ -6,7 +8,7 @@ function widget:GetInfo()
 		date      = "2022.12.29",
 		license   = "GNU GPL, v2 or later",
 		layer     = -99999,
-		enabled   = true  -- loaded by default
+		enabled   = true
 	}
 end
 
@@ -20,11 +22,13 @@ local unitdefConfigNames = {
 	['armpb'] = false,
 	['armsnipe'] = false,
 	['corsktl'] = false,
-	['armgremlin'] = false,
+	['armgremlin'] = true,
 	['armamex'] = true,
+	['armshockwave'] = true,
 	['armckfus'] = true,
 	['armspy'] = true,
 	['corspy'] = true,
+	['corphantom'] = true,
 }
 -- convert unitname -> unitDefID
 local unitdefConfig = {}
@@ -85,7 +89,8 @@ function widget:Initialize()
 	WG['autocloak'].getUnitdefConfig = function()
 		return unitdefConfig
 	end
-	WG['autocloak'].setUnitdefConfig = function(type, value)
+	WG['autocloak'].setUnitdefConfig = function(data)
+		local type, value = data[1], data[2]
 		unitdefConfig[type] = value
 	end
 
@@ -100,7 +105,7 @@ function widget:UnitFinished(unitID, unitDefID, unitTeam)
 	cloakActive(unitID, unitDefID)
 end
 
-function widget:UnitDestroyed(unitID, unitDefID, unitTeam)
+function widget:UnitDestroyed(unitID, unitDefID, unitTeam, attackerID, attackerDefID, attackerTeam, weaponDefID)
 	if cloakunits[unitID] then
 		cloakunits[unitID] = nil
 	end
@@ -126,16 +131,25 @@ function widget:PlayerChanged(playerID)
 end
 
 function widget:GetConfigData()
+	local unitdefConfigNames = {}
+	for uDefID, params in pairs(unitdefConfig) do
+		if UnitDefs[uDefID] then
+			unitdefConfigNames[UnitDefs[uDefID].name] = params
+		end
+	end
 	return {
-		unitdefConfig = unitdefConfig,
+		unitdefConfig = unitdefConfigNames,
 	}
 end
 
 function widget:SetConfigData(cfg)
 	if cfg.unitdefConfig ~= nil then
-		for unitDefID, value in pairs(cfg.unitdefConfig) do
-			if unitdefConfig[unitDefID] ~= nil then
-				unitdefConfig[unitDefID] = value
+		for unitName, value in pairs(cfg.unitdefConfig) do
+			if UnitDefNames[unitName] then
+				local unitDefID = UnitDefNames[unitName].id
+				if unitdefConfig[unitDefID] ~= nil then
+					unitdefConfig[unitDefID] = value
+				end
 			end
 		end
 	end

@@ -1,5 +1,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
     return {
         name      = "Set fighters on Fly mode",
@@ -9,7 +11,7 @@ function widget:GetInfo()
         license   = "GNU GPL, v2 or later",
         version   = 1,
         layer     = 5,
-        enabled   = true  --  loaded by default?
+        enabled   = true
     }
 end
 

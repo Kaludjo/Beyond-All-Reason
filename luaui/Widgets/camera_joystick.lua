@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name			= "Camera Joystick",
@@ -6,7 +8,7 @@ function widget:GetInfo()
 		date			= "2021.04.06",
 		license   = "GNU GPL, v2 or later",
 		layer		 = 1,		 --	after the normal widgets
-		enabled	 = false	--	loaded by default?
+		enabled	 = false
 	}
 end
 ---------------------INFO------------------------
@@ -313,7 +315,8 @@ local function SocketConnect(host, port)
 	client=socket.tcp()
 	client:settimeout(0)
 	res, err = client:connect(host, port)
-	if not res and not res=="timeout" then
+	if not res and err ~= "timeout" then
+		client:close()
 		Spring.Echo("Unable to connect to joystick server: ",res, err, "Restart widget after server is started")
 		return false
 	end
@@ -357,6 +360,8 @@ function widget:Initialize()
 	local connected = SocketConnect(host, port)
 	if connected then
 		Spring.SetConfigInt("RotOverheadClampMap",0)
+	else
+		widgetHandler:RemoveWidget()
 	end
 end
 
@@ -504,7 +509,6 @@ function widget:Update(dt) -- dt in seconds
 	local cs = spGetCameraState()
 
 	if cs.name == "rot" and joystate.axes then
-		--Spring.Utilities.TableEcho(cs)
 		if joystate[Ybutton[1]][Ybutton[2]] and joystate[Ybutton[1]][Ybutton[2]] == 1 then -- A button dumps debug
 			Spring.Echo(joystatetostr(joystate))
 		end

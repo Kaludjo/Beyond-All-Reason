@@ -1,4 +1,6 @@
 --http://springrts.com/phpbb/viewtopic.php?f=23&t=30560
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name = "Replay buttons",
@@ -16,8 +18,8 @@ local fontfile2 = "fonts/" .. Spring.GetConfigString("bar_font2", "Exo2-SemiBold
 
 local vsx, vsy = Spring.GetViewGeometry()
 
-local ui_opacity = tonumber(Spring.GetConfigFloat("ui_opacity", 0.7) or 0.6)
-local ui_scale = tonumber(Spring.GetConfigFloat("ui_scale", 1) or 1)
+local ui_opacity = Spring.GetConfigFloat("ui_opacity", 0.7)
+local ui_scale = Spring.GetConfigFloat("ui_scale", 1)
 
 local buttonWidth = 0.037
 local buttonHeight = 0.033

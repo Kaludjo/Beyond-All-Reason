@@ -1,3 +1,5 @@
+local gadget = gadget ---@type Gadget
+
 function gadget:GetInfo()
 	return {
 		name = "Unit Script Lights",
@@ -6,7 +8,7 @@ function gadget:GetInfo()
 		date = "Apr, 2008",
 		license = "GNU GPL, v2 or later",
 		layer = 0,
-		enabled = true, --  loaded by default?
+		enabled = true,
 	}
 end
 

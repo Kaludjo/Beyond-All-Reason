@@ -1,3 +1,5 @@
+local gadget = gadget ---@type Gadget
+
 function gadget:GetInfo()
     return {
         name      = "game_no_share_to_enemy",
@@ -6,7 +8,7 @@ function gadget:GetInfo()
         date      = "19 Jan 2008",
         license   = "GNU GPL, v2 or later",
         layer     = 0,
-        enabled   = true  --  loaded by default?
+        enabled   = true
     }
 end
 

@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 	name      = "FOV changer",
@@ -6,7 +8,7 @@ function widget:GetInfo()
 	date      = "",
 	license   = "GNU GPL, v2 or later",
 	layer     = 999999,
-	enabled   = false  --  loaded by a horse?
+	enabled   = false
 	}
 end
 

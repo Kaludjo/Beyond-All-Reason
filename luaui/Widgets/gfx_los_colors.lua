@@ -1,3 +1,5 @@
+local widget = widget ---@type Widget
+
 function widget:GetInfo()
 	return {
 		name      = "LOS colors",
@@ -7,7 +9,7 @@ function widget:GetInfo()
 		license   = "public domain",
 		layer     = 0,
 		version   = 2,
-		enabled   = true  -- loaded by default
+		enabled   = true
 	}
 end
 
